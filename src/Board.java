@@ -5,6 +5,10 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
 import javafx.util.Duration;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+
 public class Board extends GridPane {
     boolean pause;
     int size;
@@ -17,8 +21,16 @@ public class Board extends GridPane {
     Timeline timeLine;
     boolean ai;
     HamiltonCycle hamiltonCycle;
-
-    Board(int size){
+    BufferedWriter userScoreBufferedWriter;
+    BufferedWriter AIScoreBufferedWriter;
+    FileWriter userScoreFileWriter;
+    FileWriter AIScoreFileWriter;
+    //throws exception because of bufferedwriter
+    Board(int size) throws Exception{
+        this.userScoreFileWriter = new FileWriter("UserScoreCard", true);
+        this.AIScoreFileWriter =   new FileWriter("AIScoreCard", true);
+        this.userScoreBufferedWriter = new BufferedWriter(this.userScoreFileWriter);
+        this.AIScoreBufferedWriter =   new BufferedWriter(this.AIScoreFileWriter);
         this.pause = false;
         addTiles(size);
         this.rate = 0;
@@ -40,7 +52,12 @@ public class Board extends GridPane {
 
             if (!pause){
             increaseRate();
-            moveSnake();
+            // try/catch because of bufferedwriter
+                try {
+                    moveSnake();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         }));
         timeLine.setCycleCount(Animation.INDEFINITE);
@@ -93,9 +110,9 @@ public class Board extends GridPane {
         }
         return false;
     }
-    void moveSnake(){
+    void moveSnake() throws IOException {
         if (this.onBoardDirection.equals("DOWN")){
-            if (this.body.head.j == this.size-1) System.exit(-2);
+            if (this.body.head.j == this.size-1) endGame(-2);
             if (this.body.head.j < this.size-1){
                 this.body.body.add( new Position(this.body.head.i, this.body.head.j+1));
                 this.body.head = this.body.body.get(this.body.body.size()-1);
@@ -103,7 +120,7 @@ public class Board extends GridPane {
             }
         }
         if (this.onBoardDirection.equals("RIGHT")){
-            if (this.body.head.i == this.size-1) System.exit(-2);
+            if (this.body.head.i == this.size-1) endGame(-2);
             if (this.body.head.i < this.size-1){
                 this.body.body.add( new Position(this.body.head.i+1, this.body.head.j));
                 this.body.head = this.body.body.get(this.body.body.size()-1);
@@ -112,7 +129,7 @@ public class Board extends GridPane {
         }
 
         if (this.onBoardDirection.equals("LEFT")){
-            if (this.body.head.i == 0) System.exit(-2);
+            if (this.body.head.i == 0) endGame(-2);
             if (this.body.head.i > 0){
                 this.body.body.add( new Position(this.body.head.i-1, this.body.head.j));
                 this.body.head = this.body.body.get(this.body.body.size()-1);
@@ -121,7 +138,7 @@ public class Board extends GridPane {
         }
 
         if (this.onBoardDirection.equals("UP")){
-            if (this.body.head.j == 0) System.exit(-2);
+            if (this.body.head.j == 0) endGame(-2);
             if (this.body.head.j > 0){
                 this.body.body.add( new Position(this.body.head.i, this.body.head.j-1));
                 this.body.head = this.body.body.get(this.body.body.size()-1);
@@ -131,10 +148,10 @@ public class Board extends GridPane {
         this.currentDirection = this.onBoardDirection;
 
         if (positionInBody(this.body.head)){
-            System.exit(-8);
+            endGame(-3);
         }
         if (body.body.size() == this.size * this.size){
-            System.exit(-10);
+            endGame(-4);
         }
 
 
@@ -339,7 +356,25 @@ public class Board extends GridPane {
         else return this.onBoardDirection.equals("DOWN") && positionInBody(new Position(this.body.head.i, this.body.head.j + 1));
     }
 
+    void endGame(int exitCode) throws IOException {
+        if (this.size == 16){
+        StringBuilder str = new StringBuilder();
+        str.append(this.body.body.size());
+        str.append("\n");
+        if (this.ai) {
+            this.AIScoreBufferedWriter.append(str.toString());
+            this.AIScoreBufferedWriter.close();
+        }
+        else {
+            this.userScoreBufferedWriter.append(str.toString());
+            this.userScoreBufferedWriter.close();}
 
+        }
+
+
+
+        System.exit(exitCode);
+    }
 
 
 }

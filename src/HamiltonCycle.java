@@ -84,13 +84,13 @@ public class HamiltonCycle {
 
 
 
-            for (int[] tileInfos : graph){
-            for (int info : tileInfos){
-
-                System.out.print(info + " ");
-            }
-            System.out.println();
-        }
+//            for (int[] tileInfos : graph){
+//            for (int info : tileInfos){
+//
+//                System.out.print(info + " ");
+//            }
+//            System.out.println();
+//        }
     }
 
     boolean isValidRight(Position position){
